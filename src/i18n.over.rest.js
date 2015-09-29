@@ -22,6 +22,7 @@
     function I18nMessageWriterFactory(config, restServiceHandler) {
         return function (ctx, presenter) {
             var payload = {
+                locale: ctx.locale,
                 key: ctx.key,
                 message: ctx.message
             };

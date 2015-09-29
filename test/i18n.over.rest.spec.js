@@ -185,7 +185,7 @@ describe('i18n.rest', function () {
                         expectRestCallFor({
                             method:'POST',
                             url:'api/i18n/translate',
-                            data:{key: code, message: translation, namespace:namespace},
+                            data:{key: code, message: translation, namespace:namespace, locale: locale},
                             withCredentials:true,
                             headers: {
                                 'accept-language': locale
