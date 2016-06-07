@@ -141,7 +141,7 @@ describe('i18n.rest', function () {
         }));
 
         function expectRestCallFor(ctx) {
-            expect(rest.calls[0].args[0].params).toEqual(ctx);
+            expect(rest.calls.first().args[0].params).toEqual(ctx);
         }
 
         describe('given required context fields', function() {
@@ -162,7 +162,7 @@ describe('i18n.rest', function () {
                     expectRestCallFor({
                         method:'POST',
                         url:'api/i18n/translate',
-                        data:{key: code, message: translation},
+                        data:{locale: undefined, key: code, message: translation},
                         withCredentials:true
                     });
                 });
@@ -207,7 +207,7 @@ describe('i18n.rest', function () {
                 expectRestCallFor({
                     method:'POST',
                     url:prefix + 'api/i18n/translate',
-                    data:{key: code, message: translation},
+                    data:{locale: undefined, key: code, message: translation},
                     withCredentials:true
                 });
             });

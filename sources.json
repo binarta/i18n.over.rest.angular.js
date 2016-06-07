@@ -1,0 +1,5 @@
+{
+  "default": {
+    "i18n.over.rest": "bower_components/binarta.i18n.over.rest.angular/src/i18n.over.rest.js"
+  }
+}
