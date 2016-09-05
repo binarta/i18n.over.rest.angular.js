@@ -5,17 +5,25 @@
 
     function I18nMessageReaderFactory(config, $http) {
         return function (ctx, onSuccess, onError) {
-            var requestConfig = {};
-            if (ctx.locale) requestConfig.headers = {'Accept-Language': ctx.locale};
-            $http.get((config.baseUri || '') + 'api/i18n/translate?' +
-            (ctx.namespace ? 'namespace=' + ctx.namespace + '&' : '') +
-            'key=' + encodeURIComponent(ctx.code), requestConfig)
-                .success(function (it) {
-                    if (onSuccess) onSuccess(it)
-                })
-                .error(function () {
-                    if (onError) onError();
-                });
+            $http({
+                method: 'POST',
+                url: config.baseUri + 'api/usecase',
+                data: {
+                    headers: {
+                        usecase: 'resolve.i18n.message',
+                        namespace: ctx.namespace,
+                        locale: ctx.locale,
+                        section: ctx.section
+                    },
+                    payload: {
+                        key: ctx.code
+                    }
+                }
+            }).then(function (it) {
+                if (onSuccess) onSuccess(it.data.message)
+            }, function () {
+                if (onError) onError();
+            });
         }
     }
 

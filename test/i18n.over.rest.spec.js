@@ -28,7 +28,7 @@ describe('i18n.rest', function () {
         var reader;
         var namespace = 'namespace';
         var code = 'translation.code';
-        var translation = 'translation message';
+        var translation = {message: 'translation message'};
         var defaultTranslation = 'default translation';
         var receivedTranslation;
         var receivedError;
@@ -44,66 +44,63 @@ describe('i18n.rest', function () {
             reader = iorMessageReader;
             receivedTranslation = '';
             receivedError = false;
-            context = {};
+            context = {
+                section:'/section'
+            };
         }));
 
         function testHttpCallsWithPrefix(prefix) {
-            it('on execute perform GET request with the code', function () {
-                $httpBackend.expect('GET', prefix + 'api/i18n/translate?key=' + encodeURIComponent(code)).respond(200);
+            it('on execute perform POST request with the code', function () {
+                $httpBackend.expect('POST', prefix + 'api/usecase', {
+                    headers: {
+                        usecase: 'resolve.i18n.message',
+                        section: '/section'
+                    },
+                    payload: {
+                        key: code
+                    }
+                }).respond(200);
                 context.code = code;
                 reader(context);
                 $httpBackend.flush();
             });
-            it('on execute perform GET request with the code and namespace', function () {
-                $httpBackend.expect('GET', prefix + 'api/i18n/translate?namespace=' + namespace + '&key=' + encodeURIComponent(code)).respond(200);
+            it('on execute perform POST request with the code and namespace', function () {
+                $httpBackend.expect('POST', prefix + 'api/usecase', {
+                    headers: {
+                        usecase: 'resolve.i18n.message',
+                        namespace: namespace,
+                        section: '/section'
+                    },
+                    payload: {
+                        key: code
+                    }
+                }).respond(200);
                 context.namespace = namespace;
                 context.code = code;
                 reader(context);
                 $httpBackend.flush();
             });
             it('pass translation to on success handler', function () {
-                $httpBackend.when('GET', /.*/).respond(200, translation);
+                $httpBackend.when('POST', /.*/).respond(200, translation);
                 reader(context, onSuccess);
                 $httpBackend.flush();
-                expect(receivedTranslation).toEqual(translation);
+                expect(receivedTranslation).toEqual(translation.message);
             });
             it('on error trigger on error handler', function () {
-                $httpBackend.when('GET', /.*/).respond(404);
+                $httpBackend.when('POST', /.*/).respond(404);
                 context.default = defaultTranslation;
                 reader(context, onSuccess, onError);
                 $httpBackend.flush();
                 expect(receivedError).toEqual(true);
             });
-
-            it('test', function() {
-                context.locale = 'L';
-                $httpBackend.expect('GET', /.*/, /.*/, function(headers) {
-                    if (headers['Accept-Language'] == context.locale) return true;
-                }).respond(200, translation);
-                reader(context, onSuccess, onError);
-                $httpBackend.flush();
-            })
         }
 
-        testHttpCallsWithPrefix('');
         describe('with config.initialized notification received', function () {
             beforeEach(function () {
                 config.baseUri = 'http://host/context/';
             });
 
             testHttpCallsWithPrefix('http://host/context/');
-        });
-
-        describe('with config.initialized notification received without baseUri', function () {
-            testHttpCallsWithPrefix('');
-        });
-
-        describe('code should be uri encoded', function () {
-            beforeEach(function () {
-                code = 'Foo & Bar';
-            });
-
-            testHttpCallsWithPrefix('');
         });
     });
 
@@ -136,7 +133,7 @@ describe('i18n.rest', function () {
             receivedError = false;
             context = {};
             presenter = {
-                success:onSuccess
+                success: onSuccess
             };
         }));
 
@@ -144,49 +141,49 @@ describe('i18n.rest', function () {
             expect(rest.calls.first().args[0].params).toEqual(ctx);
         }
 
-        describe('given required context fields', function() {
+        describe('given required context fields', function () {
             var key;
 
-            beforeEach(function() {
+            beforeEach(function () {
                 context.key = code;
                 context.message = translation;
                 key = 'api/i18n/translate?key=' + code;
             });
 
-            describe('on execute', function() {
-                beforeEach(function() {
+            describe('on execute', function () {
+                beforeEach(function () {
                     writer(context, presenter);
                 });
 
-                it('performs rest call', function() {
+                it('performs rest call', function () {
                     expectRestCallFor({
-                        method:'POST',
-                        url:'api/i18n/translate',
-                        data:{locale: undefined, key: code, message: translation},
-                        withCredentials:true
+                        method: 'POST',
+                        url: 'api/i18n/translate',
+                        data: {locale: undefined, key: code, message: translation},
+                        withCredentials: true
                     });
                 });
             });
 
-            describe('and optional context fields', function() {
+            describe('and optional context fields', function () {
 
-                beforeEach(function() {
+                beforeEach(function () {
                     context.namespace = namespace;
                     context.locale = locale;
                     key = 'api/i18n/translate?namespace=' + namespace + '&key=' + code;
                 });
 
-                describe('on execute', function() {
-                    beforeEach(function() {
+                describe('on execute', function () {
+                    beforeEach(function () {
                         writer(context, presenter);
                     });
 
-                    it('performs rest call', function() {
+                    it('performs rest call', function () {
                         expectRestCallFor({
-                            method:'POST',
-                            url:'api/i18n/translate',
-                            data:{key: code, message: translation, namespace:namespace, locale: locale},
-                            withCredentials:true,
+                            method: 'POST',
+                            url: 'api/i18n/translate',
+                            data: {key: code, message: translation, namespace: namespace, locale: locale},
+                            withCredentials: true,
                             headers: {
                                 'accept-language': locale
                             }
@@ -201,14 +198,14 @@ describe('i18n.rest', function () {
                 context.key = code;
                 context.message = translation;
                 writer(context, {
-                    success:onSuccess,
-                    error:onError
+                    success: onSuccess,
+                    error: onError
                 });
                 expectRestCallFor({
-                    method:'POST',
-                    url:prefix + 'api/i18n/translate',
-                    data:{locale: undefined, key: code, message: translation},
-                    withCredentials:true
+                    method: 'POST',
+                    url: prefix + 'api/i18n/translate',
+                    data: {locale: undefined, key: code, message: translation},
+                    withCredentials: true
                 });
             });
         }
